@@ -1,6 +1,6 @@
 describe('info', function() {
-  var tool = eruda.get('info'),
-    $tool = $('.eruda-info')
+  let tool = eruda.get('info')
+  let $tool = $('.eruda-info')
 
   describe('default', function() {
     it('location', function() {
@@ -37,6 +37,12 @@ describe('info', function() {
     tool.add('test', 'eruda')
     expect($tool.find('.eruda-title')).toContainText('test')
     expect($tool.find('.eruda-content')).toContainText('eruda')
+  })
+
+  it('get', function() {
+    expect(tool.get()).toEqual([{ name: 'test', val: 'eruda' }])
+    expect(tool.get('test')).toBe('eruda')
+    expect(tool.get('test2')).not.toBeDefined()
   })
 
   it('remove', function() {

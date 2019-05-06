@@ -23,7 +23,9 @@ import {
   isArr,
   unique,
   contain,
-  isEmpty
+  isEmpty,
+  clone,
+  noop
 } from '../lib/util'
 
 export default class Log {
@@ -82,25 +84,36 @@ export default class Log {
 
     return false
   }
+  extractObj(cb = noop) {
+    let { args, type } = this
+
+    let setSrc = result => {
+      this.src = result
+      cb()
+    }
+    if (type === 'table') {
+      extractObj(args[0], {}, setSrc)
+    } else {
+      extractObj(
+        args.length === 1 && isObj(args[0]) ? args[0] : args,
+        {},
+        setSrc
+      )
+    }
+  }
   _formatMsg() {
     let { type, id, displayHeader, time, from, args } = this
 
-    if (this._needSrc()) {
-      let setSrc = result => (this.src = result)
-      if (type === 'table') {
-        extractObj(args[0], {}, setSrc)
-      } else {
-        extractObj(
-          args.length === 1 && isObj(args[0]) ? args[0] : args,
-          {},
-          setSrc
-        )
-      }
+    // Don't change original args for lazy evaluation.
+    args = clone(args)
+
+    if (this._needSrc() && !Log.lazyEvaluation) {
+      this.extractObj()
     }
 
-    let msg = '',
-      icon,
-      err
+    let msg = ''
+    let icon
+    let err
 
     switch (type) {
       case 'log':
@@ -148,10 +161,12 @@ export default class Log {
     this.value = msg
     msg = render({ msg, type, icon, id, displayHeader, time, from })
 
-    delete this.args
+    if (!this._needSrc() || !Log.lazyEvaluation) {
+      delete this.args
+    }
     this.formattedMsg = msg
   }
-  static click(type, log, $el) {
+  static click(type, log, $el, logger) {
     switch (type) {
       case 'log':
       case 'warn':
@@ -161,7 +176,9 @@ export default class Log {
       case 'table':
       case 'dir':
         if (log.src) {
-          if (Log.showSrcInSources) return 'viewSrc'
+          if (Log.showSrcInSources) {
+            return logger.emit('viewJson', log.src)
+          }
           let $json = $el.find('.eruda-json')
           if ($json.hasClass('eruda-hidden')) {
             if ($json.data('init') !== 'true') {
@@ -172,6 +189,11 @@ export default class Log {
           } else {
             $json.addClass('eruda-hidden')
           }
+        } else if (log.args) {
+          log.extractObj(function() {
+            Log.click(type, log, $el, logger)
+            delete log.args
+          })
         }
         break
       case 'error':
@@ -187,6 +209,7 @@ export default class Log {
 Log.showGetterVal = false
 Log.showUnenumerable = true
 Log.showSrcInSources = false
+Log.lazyEvaluation = true
 
 let getAbstract = wrap(origGetAbstract, function(fn, obj) {
   return fn(obj, {
@@ -241,12 +264,12 @@ function formatTable(args) {
   return ret
 }
 
-let regJsUrl = /https?:\/\/([0-9.\-A-Za-z]+)(?::(\d+))?\/[A-Z.a-z0-9/]*\.js/g,
-  regErudaJs = /eruda(\.min)?\.js/
+let regJsUrl = /https?:\/\/([0-9.\-A-Za-z]+)(?::(\d+))?\/[A-Z.a-z0-9/]*\.js/g
+let regErudaJs = /eruda(\.min)?\.js/
 
 function formatErr(err) {
-  let lines = err.stack ? err.stack.split('\n') : [],
-    msg = `${err.message || lines[0]}<br/>`
+  let lines = err.stack ? err.stack.split('\n') : []
+  let msg = `${err.message || lines[0]}<br/>`
 
   lines = lines.filter(val => !regErudaJs.test(val)).map(val => escape(val))
 

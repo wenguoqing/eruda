@@ -4,6 +4,7 @@ import { noop, evalCss, $, Emitter } from '../lib/util'
 import emitter from '../lib/emitter'
 import Settings from '../Settings/Settings'
 import stringify from './stringify'
+import libStringify from '../lib/stringify'
 
 export default class Console extends Tool {
   constructor() {
@@ -18,6 +19,7 @@ export default class Console extends Tool {
   }
   init($el, container) {
     super.init($el)
+    this._container = container
 
     this._appendTpl()
 
@@ -25,8 +27,8 @@ export default class Console extends Tool {
     this._exposeLogger()
     this._rejectionHandler = e => this._logger.error(e.reason)
 
-    this._initCfg(container)
-    this._bindEvent(container)
+    this._initCfg()
+    this._bindEvent()
   }
   show() {
     super.show()
@@ -39,8 +41,9 @@ export default class Console extends Tool {
 
     CONSOLE_METHOD.forEach(name => {
       let origin = (origConsole[name] = noop)
-      if (winConsole[name])
+      if (winConsole[name]) {
         origin = origConsole[name] = winConsole[name].bind(winConsole)
+      }
 
       winConsole[name] = (...args) => {
         this[name](...args)
@@ -63,8 +66,9 @@ export default class Console extends Tool {
   catchGlobalErr() {
     this._origOnerror = window.onerror
 
-    window.onerror = (errMsg, url, lineNum, column, errObj) =>
+    window.onerror = (errMsg, url, lineNum, column, errObj) => {
       this._logger.error(errObj ? errObj : errMsg)
+    }
     window.addEventListener('unhandledrejection', this._rejectionHandler)
 
     return this
@@ -86,6 +90,7 @@ export default class Console extends Tool {
     this.ignoreGlobalErr()
     this.restoreConsole()
     this._unregisterListener()
+    this._rmCfg()
   }
   _registerListener() {
     this._scaleListener = scale => (this._scale = scale)
@@ -114,8 +119,8 @@ export default class Console extends Tool {
     })
   }
   _initLogger() {
-    let $filter = this._$control.find('.eruda-filter'),
-      logger = (this._logger = new Logger(this._$logs, this))
+    let $filter = this._$control.find('.eruda-filter')
+    let logger = (this._logger = new Logger(this._$logs, this))
 
     logger.on('filter', filter =>
       $filter.each(function() {
@@ -140,7 +145,8 @@ export default class Console extends Tool {
         })
     )
   }
-  _bindEvent(container) {
+  _bindEvent() {
+    let container = this._container
     let $input = this._$input,
       $inputBtns = this._$inputBtns,
       $control = this._$control,
@@ -200,9 +206,29 @@ export default class Console extends Tool {
 
     this._$inputBtns.show()
   }
-  _initCfg(container) {
-    let sources = container.get('sources'),
-      logger = this._logger
+  _rmCfg() {
+    let cfg = this.config
+
+    let settings = this._container.get('settings')
+    if (!settings) return
+
+    settings
+      .remove(cfg, 'catchGlobalErr')
+      .remove(cfg, 'overrideConsole')
+      .remove(cfg, 'displayExtraInfo')
+      .remove(cfg, 'displayUnenumerable')
+      .remove(cfg, 'displayGetterVal')
+      .remove(cfg, 'lazyEvaluation')
+      .remove(cfg, 'viewLogInSources')
+      .remove(cfg, 'displayIfErr')
+      .remove(cfg, 'useWorker')
+      .remove(cfg, 'maxLogNum')
+      .remove('Console')
+  }
+  _initCfg() {
+    let container = this._container
+    let sources = container.get('sources')
+    let logger = this._logger
 
     let cfg = (this.config = Settings.createCfg('console', {
       catchGlobalErr: true,
@@ -210,6 +236,7 @@ export default class Console extends Tool {
       displayExtraInfo: false,
       displayUnenumerable: true,
       displayGetterVal: false,
+      lazyEvaluation: true,
       viewLogInSources: false,
       displayIfErr: false,
       useWorker: true,
@@ -227,6 +254,7 @@ export default class Console extends Tool {
     logger.displayHeader(cfg.get('displayExtraInfo'))
     logger.displayUnenumerable(cfg.get('displayUnenumerable'))
     logger.displayGetterVal(cfg.get('displayGetterVal'))
+    logger.lazyEvaluation(cfg.get('lazyEvaluation'))
     if (sources) logger.viewLogInSources(cfg.get('viewLogInSources'))
     logger.maxNum(maxLogNum)
 
@@ -244,6 +272,8 @@ export default class Console extends Tool {
           return logger.displayUnenumerable(val)
         case 'displayGetterVal':
           return logger.displayGetterVal(val)
+        case 'lazyEvaluation':
+          return logger.lazyEvaluation(val)
         case 'viewLogInSources':
           return logger.viewLogInSources(val)
         case 'useWorker':
@@ -262,10 +292,12 @@ export default class Console extends Tool {
       .switch(cfg, 'displayExtraInfo', 'Display Extra Information')
       .switch(cfg, 'displayUnenumerable', 'Display Unenumerable Properties')
       .switch(cfg, 'displayGetterVal', 'Access Getter Value')
+      .switch(cfg, 'lazyEvaluation', 'Lazy Evaluation')
 
     if (isWorkerSupported) settings.switch(cfg, 'useWorker', 'Use Web Worker')
-    if (sources)
+    if (sources) {
       settings.switch(cfg, 'viewLogInSources', 'View Log In Sources Panel')
+    }
 
     settings
       .select(cfg, 'maxLogNum', 'Max Log Number', [
@@ -279,6 +311,8 @@ export default class Console extends Tool {
       .separator()
   }
 }
+
+Console.stringify = libStringify
 
 const CONSOLE_METHOD = [
   'log',

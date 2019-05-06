@@ -15,13 +15,14 @@ Display console logs. Implementation detail follows the [console api spec](https
 |displayExtraInfo   |boolean|Display extra information      |
 |displayUnenumerable|boolean|Display unenumerable properties|
 |displayGetterVal   |boolean|Access getter value            |
+|lazyEvaluation     |boolean|Stringify object when clicked  |
 |viewLogInSources   |boolean|View log in sources panel      |
 |displayIfErr       |boolean|Auto display if error occurs   |
 |useWorker          |boolean|Use web worker                 |
 |maxLogNum          |string |Max log number                 |
 
 ```javascript
-var console = eruda.get('console');
+let console = eruda.get('console');
 console.config.set('catchGlobalErr', true);
 ```
 
@@ -32,7 +33,7 @@ All these methods can be used in the same way as window.console object.
 Note: When called, a corresponding event is triggered.
 
 ```javascript
-var console = eruda.get('console');
+let console = eruda.get('console');
 console.log('eruda is a console for %s.', 'mobile browsers');
 console.table([{test: 1}, {test: 2}, {test2: 3}], 'test');
 console.error(new Error('eruda'));
@@ -159,6 +160,21 @@ info.add('title', 'content');
 info.add('location', () => location.href);
 ```
 
+### get
+
+Get info or infos.
+
+|Name  |Type           |Desc        |
+|------|---------------|------------|
+|name  |string         |Info name   |
+|return|string function|Info content|
+
+```javascript
+info.add('title', 'content')
+info.get(); // -> [{name: 'title', val: 'content'}]
+info.get('title') // -> 'content'
+```
+
 ### remove
 
 Remove specified info.
@@ -223,6 +239,15 @@ Customization for all tools.
 
 Clear settings.
 
+### remove
+
+Remove setting.
+
+|Name|Type  |Desc         |
+|----|------|-------------|
+|cfg |object|Config object|
+|name|string|Option name  |
+
 ### text
 
 Add text.
@@ -279,7 +304,7 @@ Add color to select a color.
 Add a separator.
 
 ```javascript
-var cfg = eruda.util.createCfg('test');
+let cfg = eruda.util.createCfg('test');
 
 cfg.set(eruda.util.defaults(cfg.get(), {
     testBool: true,
@@ -292,4 +317,6 @@ settings.text('Test')
         .select(cfg, 'testSelect', 'Test Select', ['select1', 'select2'])
         .range(cfg, 'testRange', 'Test Range', {min: 0, max: 1, step: 0.1})
         .separator();
+
+settings.remove(cfg, 'testBool')        
 ```

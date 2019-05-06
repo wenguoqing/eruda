@@ -111,6 +111,20 @@ export default [
     desc: 'Test geolocation'
   },
   {
+    name: 'Load Dom Plugin',
+    fn() {
+      loadPlugin('dom')
+    },
+    desc: 'Navigate dom tree'
+  },
+  {
+    name: 'Load Orientation Plugin',
+    fn() {
+      loadPlugin('orientation')
+    },
+    desc: 'Test orientation api'
+  },
+  {
     name: 'Restore Settings',
     fn() {
       let store = safeStorage('local')
@@ -194,9 +208,11 @@ function loadPlugin(name) {
 const pluginVersion = {
   fps: '1.0.2',
   features: '1.0.2',
-  timing: '1.1.1',
+  timing: '1.1.2',
   memory: '1.0.1',
   code: '1.0.0',
   benchmark: '1.0.0',
-  geolocation: '1.1.0'
+  geolocation: '1.1.0',
+  dom: '1.0.1',
+  orientation: '1.0.0'
 }

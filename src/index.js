@@ -56,8 +56,11 @@ module.exports = {
   Resources,
   Info,
   Snippets,
+  Settings,
   get(name) {
     if (!this._checkInit()) return
+
+    if (name === 'entryBtn') return this._entryBtn
 
     let devTools = this._devTools
 
@@ -182,8 +185,8 @@ module.exports = {
     this._devTools = new DevTools(this._$el)
   },
   _initStyle() {
-    let className = 'eruda-style-container',
-      $el = this._$el
+    let className = 'eruda-style-container'
+    let $el = this._$el
 
     if (this._shadowRoot) {
       evalCss.container = this._shadowRoot
@@ -204,8 +207,8 @@ module.exports = {
     this._entryBtn.on('click', () => this._devTools.toggle())
   },
   _initSettings() {
-    let devTools = this._devTools,
-      settings = new Settings()
+    let devTools = this._devTools
+    let settings = new Settings()
 
     devTools.add(settings)
 

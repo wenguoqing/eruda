@@ -42,17 +42,18 @@ export default class XhrRequest extends Emitter {
       subType: type.subType,
       size: getSize(xhr, true, this._url),
       time: now(),
-      resHeaders: getHeaders(xhr)
+      resHeaders: getHeaders(xhr),
+      reqHeaders: (xhr.erudaRequest && xhr.erudaRequest._headers) || null
     })
   }
   handleDone() {
     let xhr = this._xhr,
       resType = xhr.responseType
 
-    let resTxt =
-      resType === '' || resType === 'text' || resType === 'json'
-        ? xhr.responseText
-        : ''
+    let resTxt = ''
+
+    if (resType === '' || resType === 'text') resTxt = xhr.responseText
+    if (resType === 'json') resTxt = JSON.stringify(xhr.response)
 
     this.emit('update', this._id, {
       status: xhr.status,
@@ -89,10 +90,9 @@ function getSize(xhr, headersOnly, url) {
   function getStrSize() {
     if (!headersOnly) {
       let resType = xhr.responseType
-      let resTxt =
-        resType === '' || resType === 'text' || resType === 'json'
-          ? xhr.responseText
-          : ''
+      let resTxt = ''
+
+      if (resType === '' || resType === 'text') resTxt = xhr.responseText
       if (resTxt) size = lenToUtf8Bytes(resTxt)
     }
   }

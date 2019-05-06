@@ -1,5 +1,5 @@
 <a href="https://eruda.liriliri.io/" target="_blank">
-    <img src="http://7xn2zy.com1.z0.glb.clouddn.com/github_eruda2.jpg">
+    <img src="./banner.jpg">
 </a>
 
 # Eruda
@@ -24,7 +24,7 @@ Eruda 是一个专为手机网页前端设计的调试面板，类似 DevTools �
 
 ## 功能清单
 
-![Eruda](http://7xn2zy.com1.z0.glb.clouddn.com/eruda_screenshot4.jpg)
+![Eruda](./screenshot.jpg)
 
 1. 按钮拖拽，面板透明度大小设置。
 
@@ -47,7 +47,7 @@ Eruda 是一个专为手机网页前端设计的调试面板，类似 DevTools �
 通过CDN使用：
 
 ```html
-<script src="//cdn.bootcss.com/eruda/1.4.2/eruda.min.js"></script>
+<script src="//cdn.bootcss.com/eruda/1.5.2/eruda.min.js"></script>
 <script>eruda.init();</script>
 ```
 
@@ -80,7 +80,7 @@ Js文件对于移动端来说略重（gzip后大概100kb）。建议通过url参
 * tool：指定要初始化哪些面板，默认加载所有。
 
 ```javascript
-var el = document.createElement('div');
+let el = document.createElement('div');
 document.body.appendChild(el);
 
 eruda.init({

@@ -21,50 +21,52 @@ export default function stringify(
     visitor = new Visitor(),
     topObj,
     level = 0,
-    circularMarker = false,
     getterVal = false,
     unenumerable = true
   } = {}
 ) {
-  let json = '',
-    type,
-    parts = [],
-    names = [],
-    proto,
-    objAbstract,
-    circularObj,
-    allKeys,
-    keys,
-    id = ''
+  let json = ''
+  let type
+  let parts = []
+  let names = []
+  let proto
+  let objAbstract
+  let circularObj
+  let allKeys
+  let keys
+  let id = ''
 
   topObj = topObj || obj
 
-  let passOpts = { visitor, getterVal, unenumerable, level: level + 1 },
-    passProtoOpts = {
-      visitor,
-      getterVal,
-      topObj,
-      unenumerable,
-      level: level + 1
-    }
+  let passOpts = { visitor, getterVal, unenumerable, level: level + 1 }
+  let passProtoOpts = {
+    visitor,
+    getterVal,
+    topObj,
+    unenumerable,
+    level: level + 1
+  }
 
-  let wrapKey = key => `"${escapeJsonStr(key)}"`,
-    wrapStr = str => `"${escapeJsonStr(toStr(str))}"`
+  let wrapKey = key => `"${escapeJsonStr(key)}"`
+  let wrapStr = str => `"${escapeJsonStr(toStr(str))}"`
 
   type = getType(obj)
 
-  let isFn = type == '[object Function]',
-    isStr = type == '[object String]',
-    isArr = type == '[object Array]',
-    isObj = type == '[object Object]',
-    isNum = type == '[object Number]',
-    isSymbol = type == '[object Symbol]',
-    isBool = type == '[object Boolean]'
+  let isFn = type === '[object Function]'
+  let isStr = type === '[object String]'
+  let isArr = type === '[object Array]'
+  let isObj = type === '[object Object]'
+  let isNum = type === '[object Number]'
+  let isSymbol = type === '[object Symbol]'
+  let isBool = type === '[object Boolean]'
 
   circularObj = visitor.check(obj)
 
   if (circularObj) {
-    json = stringify(circularObj.abstract, { circularMarker: true })
+    let abstract = circularObj.abstract
+    json = `{"erudaObjAbstract": ${wrapStr(
+      abstract.erudaObjAbstract
+    )}, "erudaCircular": ${wrapStr(abstract.erudaCircular)}}`
   } else if (isStr) {
     json = wrapStr(obj)
   } else if (isArr || isObj || isFn) {
@@ -81,7 +83,6 @@ export default function stringify(
     names = unenumerable ? allKeys : keys
 
     proto = Object.getPrototypeOf(obj)
-    if (circularMarker && proto === Object.prototype) proto = null
     if (proto) {
       proto = `${wrapKey('erudaProto')}: ${stringify(proto, passProtoOpts)}`
     }
@@ -96,7 +97,7 @@ export default function stringify(
       erudaCircular: id
     })
     parts.push(`${wrapKey('erudaObjAbstract')}: ${wrapStr(objAbstract)}`)
-    if (!circularMarker) parts.push(`"erudaId": "${id}"`)
+    parts.push(`"erudaId": "${id}"`)
     each(names, objIteratee)
     if (proto) parts.push(proto)
     json += parts.join(', ') + ' }'
@@ -133,7 +134,7 @@ export default function stringify(
         erudaCircular: id
       })
       parts.push(`${wrapKey('erudaObjAbstract')}: ${wrapStr(objAbstract)}`)
-      if (!circularMarker) parts.push(`"erudaId": "${id}"`)
+      parts.push(`"erudaId": "${id}"`)
 
       names = getKeys(obj)
       keys = names.keys
@@ -141,7 +142,6 @@ export default function stringify(
       names = unenumerable ? allKeys : keys
 
       proto = Object.getPrototypeOf(obj)
-      if (circularMarker && proto === Object.prototype) proto = null
       if (proto) {
         try {
           proto = `${wrapKey('erudaProto')}: ${stringify(proto, passProtoOpts)}`
@@ -158,14 +158,14 @@ export default function stringify(
   }
 
   function objIteratee(name) {
-    let unenumerable = !contain(keys, name) ? 'erudaUnenumerable ' : '',
-      key = wrapKey(unenumerable + name),
-      getKey = wrapKey(unenumerable + 'get ' + name),
-      setKey = wrapKey(unenumerable + 'set ' + name)
+    let unenumerable = !contain(keys, name) ? 'erudaUnenumerable ' : ''
+    let key = wrapKey(unenumerable + name)
+    let getKey = wrapKey(unenumerable + 'get ' + name)
+    let setKey = wrapKey(unenumerable + 'set ' + name)
 
-    let descriptor = Object.getOwnPropertyDescriptor(obj, name),
-      hasGetter = descriptor && descriptor.get,
-      hasSetter = descriptor && descriptor.set
+    let descriptor = Object.getOwnPropertyDescriptor(obj, name)
+    let hasGetter = descriptor && descriptor.get
+    let hasSetter = descriptor && descriptor.set
 
     if (!getterVal && hasGetter) {
       parts.push(`${key}: "(...)"`)
@@ -188,8 +188,8 @@ export default function stringify(
 }
 
 function getKeys(obj) {
-  let allKeys = Object.getOwnPropertyNames(obj),
-    keys = Object.keys(obj).sort(sortObjName)
+  let allKeys = Object.getOwnPropertyNames(obj)
+  let keys = Object.keys(obj).sort(sortObjName)
 
   allKeys = keys.concat(
     filter(allKeys, val => !contain(keys, val)).sort(sortObjName)
@@ -200,14 +200,14 @@ function getKeys(obj) {
 
 // $, upperCase, lowerCase, _
 function sortObjName(a, b) {
-  let lenA = a.length,
-    lenB = b.length,
-    len = lenA > lenB ? lenB : lenA
+  let lenA = a.length
+  let lenB = b.length
+  let len = lenA > lenB ? lenB : lenA
 
   for (let i = 0; i < len; i++) {
-    let codeA = a.charCodeAt(i),
-      codeB = b.charCodeAt(i),
-      cmpResult = cmpCode(codeA, codeB)
+    let codeA = a.charCodeAt(i)
+    let codeB = b.charCodeAt(i)
+    let cmpResult = cmpCode(codeA, codeB)
 
     if (cmpResult !== 0) return cmpResult
   }
@@ -252,8 +252,8 @@ function getFnAbstract(fn) {
 }
 
 function canBeProto(obj) {
-  let emptyObj = isEmpty(Object.getOwnPropertyNames(obj)),
-    proto = Object.getPrototypeOf(obj)
+  let emptyObj = isEmpty(Object.getOwnPropertyNames(obj))
+  let proto = Object.getPrototypeOf(obj)
 
   return emptyObj && proto && proto !== Object.prototype
 }
@@ -287,8 +287,8 @@ class Visitor {
   }
   visit(val) {
     /* Add 0 to distinguish stringify generated id from JsonViewer id.
-         * When used in web worker, they are not calling the same uniqId method, thus result may be repeated.
-         */
+     * When used in web worker, they are not calling the same uniqId method, thus result may be repeated.
+     */
     let id = uniqId('erudaJson0')
 
     this._visited.push({ id, val, abstract: {} })

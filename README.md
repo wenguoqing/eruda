@@ -1,5 +1,5 @@
 <a href="https://eruda.liriliri.io/" target="_blank">
-    <img src="http://7xn2zy.com1.z0.glb.clouddn.com/github_eruda2.jpg">
+    <img src="./doc/banner.jpg">
 </a>
 
 [中文](doc/README_CN.md)
@@ -24,7 +24,7 @@
 
 Console for Mobile Browsers.
 
-![Eruda](http://7xn2zy.com1.z0.glb.clouddn.com/eruda_screenshot4.jpg)
+![Eruda](./doc/screenshot.jpg)
 
 ## Why
 
@@ -96,7 +96,7 @@ under html root element.
 For more information, please check the [documentation](doc/API.md).
 
 ```javascript
-var el = document.createElement('div');
+let el = document.createElement('div');
 document.body.appendChild(el);
 
 eruda.init({
@@ -116,6 +116,8 @@ It is possible to enhance Eruda with more features by writing plugins. Check sou
 * [eruda-code](https://github.com/liriliri/eruda-code): Run JavaScript code.
 * [eruda-benchmark](https://github.com/liriliri/eruda-benchmark): Run JavaScript benchmarks.
 * [eruda-geolocation](https://github.com/liriliri/eruda-geolocation): Test geolocation.
+* [eruda-dom](https://github.com/liriliri/eruda-dom): Navigate dom tree.
+* [eruda-orientation](https://github.com/liriliri/eruda-orientation): Test orientation api.
 
 When writing plugins, you can use utilities exposed by Eruda, see [docs](doc/UTIL_API.md) here.
 

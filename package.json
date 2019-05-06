@@ -1,16 +1,16 @@
 {
   "name": "eruda",
-  "version": "1.5.0",
+  "version": "1.5.4",
   "description": "Console for Mobile Browsers",
   "main": "eruda.js",
   "scripts": {
-    "ci": "npm run format && npm run lint && npm run test && npm run build",
+    "ci": "npm run lint && npm run test && npm run build",
     "build": "webpack --config script/webpack.dev.js && webpack --config script/webpack.release.js",
     "cov": "npm run test && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.json -t json && node script/coverage",
     "dev": "webpack-dev-server --config script/webpack.dev.js --host 0.0.0.0",
     "test": "karma start",
     "test:sauce": "karma start karma.sauce.js",
-    "format": "prettier *.js eustia/*.js src/**/*.js src/*.js script/*.js test/*.js src/**/*.scss src/**/*.css --write",
+    "format": "prettier *.js eustia/*.js src/**/*.{js,scss,css} script/*.js test/*.{js} --write",
     "lint": "eslint src/**/*.js",
     "setup": "node script/cpTestLib",
     "genIcon": "node script/genIcon",
@@ -19,38 +19,6 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run ci"
-    }
-  },
-  "eustia": {
-    "script": {
-      "files": "script/*.js",
-      "output": "script/util.js",
-      "format": "commonjs"
-    },
-    "eruda": {
-      "files": "src/**/*.js",
-      "ignore": "src/**/stringify.js",
-      "output": "src/lib/util.js",
-      "exclude": [
-        "createCfg"
-      ],
-      "format": "es"
-    },
-    "stringify": {
-      "files": "src/lib/stringify.js",
-      "output": "src/lib/stringifyUtil.js",
-      "format": "es"
-    },
-    "test": {
-      "files": [
-        "test/*.js",
-        "test/*.html"
-      ],
-      "exclude": [
-        "js"
-      ],
-      "namespace": "util",
-      "output": "test/util.js"
     }
   },
   "repository": {

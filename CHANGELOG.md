@@ -1,3 +1,33 @@
+## v1.5.4 (23 Sep 2018)
+
+* Fix network url start with //
+* Smaller padding for logs
+
+## v1.5.3 (2 Sep 2018)
+
+* Add load dom plugin snippet
+* Disable highlight for invisible elements
+* Fix unexpected token \t in JSON
+* Add load orientation plugin snippet
+
+## v1.5.2 (23 Aug 2018)
+
+* Fix console show in sources panel
+* Fix log merge
+* Support getting entryBtn instance
+* Update timing plugin version
+* Add remove setting api
+* Fix safari merge log exception
+
+## v1.5.1 (18 Aug 2018)
+
+* Fix uglifyjs unicode escape [#69](https://github.com/liriliri/eruda/issues/69)
+* Update icons, use [iconfont](http://www.iconfont.cn) instead of [icomoon](https://icomoon.io/)
+* Show custom request headers [#78](https://github.com/liriliri/eruda/pull/78)
+* Add get api to info panel [#83](https://github.com/liriliri/eruda/issues/83)
+* Fix responseType json error [#82](https://github.com/liriliri/eruda/issues/82)
+* Support console lazy evaluation
+
 ## v1.5.0 (19 Jun 2018)
 
 * Use shadow dom to encapsulate css

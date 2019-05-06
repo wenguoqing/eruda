@@ -45,8 +45,10 @@ export default class Network extends Tool {
   overrideXhr() {
     let winXhrProto = window.XMLHttpRequest.prototype
 
-    let origSend = (this._origSend = winXhrProto.send),
-      origOpen = (this._origOpen = winXhrProto.open)
+    let origSend = (this._origSend = winXhrProto.send)
+    let origOpen = (this._origOpen = winXhrProto.open)
+    let origSetRequestHeader = (this._origSetRequestHeader =
+      winXhrProto.setRequestHeader)
 
     let self = this
 
@@ -76,12 +78,27 @@ export default class Network extends Tool {
 
       origSend.apply(this, arguments)
     }
+
+    winXhrProto.setRequestHeader = function() {
+      let req = this.erudaRequest
+      if (!req._headers) {
+        req._headers = {}
+      }
+      let key = arguments[0]
+      let val = arguments[1]
+      if (key && val) {
+        req._headers[key] = val
+      }
+
+      origSetRequestHeader.apply(this, arguments)
+    }
   }
   restoreXhr() {
     let winXhrProto = window.XMLHttpRequest.prototype
 
     if (this._origOpen) winXhrProto.open = this._origOpen
     if (this._origSend) winXhrProto.send = this._origSend
+    if (this._origSetRequestHeader) winXhrProto.setRequestHeader = this._origSetRequestHeader
   }
   overrideFetch() {
     if (!this._isFetchSupported) return
@@ -119,6 +136,7 @@ export default class Network extends Tool {
       startTime: now(),
       time: 0,
       resHeaders: {},
+      reqHeaders: {},
       resTxt: '',
       done: false
     })
@@ -143,8 +161,8 @@ export default class Network extends Tool {
     this._render()
   }
   _bindEvent() {
-    let $el = this._$el,
-      container = this._container
+    let $el = this._$el
+    let container = this._container
 
     let self = this
 
@@ -161,7 +179,8 @@ export default class Network extends Tool {
           resTxt: data.resTxt,
           type: data.type,
           subType: data.subType,
-          resHeaders: data.resHeaders
+          resHeaders: data.resHeaders,
+          reqHeaders: data.reqHeaders
         })
       })
       .on('click', '.eruda-clear-request', () => this.clear())
@@ -181,6 +200,16 @@ export default class Network extends Tool {
     evalCss.remove(this._style)
     this.restoreXhr()
     this.restoreFetch()
+    this._rmCfg()
+  }
+  _rmCfg() {
+    let cfg = this.config
+
+    let settings = this._container.get('settings')
+
+    if (!settings) return
+
+    settings.remove(cfg, 'overrideFetch').remove('Network')
   }
   _initCfg() {
     let cfg = (this.config = Settings.createCfg('network', {
